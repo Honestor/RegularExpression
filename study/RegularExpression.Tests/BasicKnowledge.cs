@@ -1,9 +1,13 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace RegularExpression.Tests
 {
-    public class One
+    /// <summary>
+    /// 基础知识
+    /// </summary>
+    public class BasicKnowledge
     {
         /// <summary>
         /// ^符号测试
@@ -66,7 +70,7 @@ namespace RegularExpression.Tests
         }
 
         /// <summary>
-        /// 字符组
+        /// 字符组 []
         /// </summary>
         [Fact]
         public void CharGroup()
@@ -174,7 +178,7 @@ namespace RegularExpression.Tests
         }
 
         /// <summary>
-        /// 排除行字符
+        /// 排除行字符 ^
         /// 注:排除行字符是匹配一个是不1到3范围的数字,h后面没有数字并正则表达式引擎并没有找到不是1到3以外的字符
         /// </summary>
         [Fact]
@@ -229,8 +233,114 @@ namespace RegularExpression.Tests
             var p3 = "hel(l|o)o";
             Assert.Matches(p3, "hello");
             Assert.Matches(p3, "heloo");
+        }
 
+        /// <summary>
+        /// 单词分界符 \b\b
+        /// </summary>
+        [Fact]
+        public void WordSplitSymbol()
+        {
+            var content= "hello regular expression";
+            //匹配字符串中是否包含regular
+            var pattern = @"\bregular\b";
+            Assert.Matches(pattern, content);
+            var result=Regex.Replace(content, pattern, "world");
+            Assert.Equal("hello world expression", result);
+        }
 
+        /// <summary>
+        /// 可选项元素
+        /// ? 问号前面紧邻的元素可以不出现也可以只出现一次
+        /// </summary>
+        [Fact]
+        public void OptionalElements() 
+        {
+            var color = "color";
+            var colour = "colour";
+            var pattern = "colou?r";
+            Assert.Matches(pattern, color);
+            Assert.Matches(pattern, colour);
+
+            //匹配7月6号
+            var patternTwo = "July?[.]6(th)?";
+            var c1 = "July.6";
+            var c2 = "July.6th";
+            var c3 = "Jul.6th";
+            var c4 = "Jul.6";
+            Assert.Matches(patternTwo, c1);
+            Assert.Matches(patternTwo, c2);
+            Assert.Matches(patternTwo, c3);
+            Assert.Matches(patternTwo, c4);
+        }
+
+        /// <summary>
+        /// 其他量词,重复出现的词
+        /// .+  加号前面紧邻的元素出现至少一次或多次
+        /// .*   星号前面紧邻的元素出现多次或者不出现
+        /// </summary>
+        [Fact]
+        public void RepeatShow()
+        {
+            var pattern = "<HR.+SIZE.*=.*66.*>";
+            var c1 = "<HR SIZE = 66 >";
+            var c2 = "<HR    SIZE   =     66     >";
+            var c3 = "<HR                 SIZE    =              66                                          >";
+            var c4 = "<HRSIZE           =   66  >";
+            Assert.Matches(pattern, c1);
+            Assert.Matches(pattern, c2);
+            Assert.Matches(pattern, c3);
+            Assert.DoesNotMatch(pattern, c4);
+
+            var pattern1 = "<HR.+SIZE.*=.*[0-9]+.*";
+            var c5 = "<HR SIZE = 6 >";
+            var c6 = "<HR    SIZE   =     666     >";
+            var c7 = "<HR                 SIZE    =              6666                                          >";
+            var c8 = "<HR SIZE           =   06  >";
+            Assert.Matches(pattern1, c5);
+            Assert.Matches(pattern1, c6);
+            Assert.Matches(pattern1, c7);
+            Assert.Matches(pattern1, c8);
+        }
+
+        /// <summary>
+        /// 反向引用
+        /// </summary>
+        [Fact]
+        public void BackReference()
+        {
+            var pattern = @"([0-9])([a-z])\1\2";
+            var c1 = "0a0a";
+            Assert.Matches(pattern,c1);
+            var c2 = "9a9a";
+            Assert.Matches(pattern, c2);
+
+            //检索字符串中连续两次相同的字符串，例如:12356085608456,该字符串中连续出现了5608
+            var pattern1 = @"(.+)\1";
+            var c3 = "12356085608456";
+            Assert.Matches(pattern1, c3);
+            var c4 = "58924564561785";
+            Assert.Matches(pattern1, c4);
+            var c5= "112112asdasd";
+            Assert.Matches(pattern1, c5);
+            var pattern2 = @"([0-9]+).*\1";
+            var c6= "123ffghfhgfh123";
+            Assert.Matches(pattern2, c6);
+            var c7 = "123ffghfhgfh456";
+            Assert.DoesNotMatch(pattern2, c7);
+        }
+
+        /// <summary>
+        /// 转义符
+        /// 让元字符失去作用
+        /// </summary>
+        [Fact]
+        public void EscapeCharacter()
+        {
+            string pattern = @"www\.baidu\.com";
+            Assert.Matches(pattern, "www.baidu.com.cn");
+            Assert.DoesNotMatch(pattern, "wwwxbaiduycom.cn");
+            Assert.DoesNotMatch(pattern, "www baidu com.cn");
         }
     }
 }

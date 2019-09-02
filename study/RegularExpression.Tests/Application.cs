@@ -112,5 +112,19 @@ namespace RegularExpression.Tests
             Assert.DoesNotMatch(pattern, ".99 F");
             Assert.DoesNotMatch(pattern, "x.99 F");
         }
+
+        /// <summary>
+        /// 非捕获组
+        /// </summary>
+        [Fact]
+        public void NotCatchedGroup()
+        {
+            var pattern = @"([a-z]{3}) ([a-z]{4}) living,or \1 \2 dying";
+            var content = "get busy living,or get busy dying";
+            var rgx = new Regex(pattern);
+            var g1 = rgx.Match(content).Groups[2].Value;
+            var g2 = rgx.Match(content).Groups[1].Value;
+            Assert.Matches(pattern, content);
+        }
     }
 }
